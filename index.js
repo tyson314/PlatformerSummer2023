@@ -3,78 +3,28 @@ const c = canvas.getContext('2d')
 
 const gravity = 3
 
-canvas.width = 1024
-canvas.height = 576
+canvas.width = 600
+canvas.height = 770
 
 c.fillRect(0, 0, canvas.width, canvas.height)
 
-class Sprite {
-  constructor({position, velocity}) {
-    this.position = position
-    this.velocity = velocity
-    this.height = 150
-    this.width = 50
-    this.movementSpeed = 10
-    this.lastKey = null
-    this.jumpReady = true
-  }
-
-  draw() {
-    c.fillStyle = 'red'
-    c.fillRect(this.position.x, this.position.y, this.width, this.height)
-  }
-
-  update() {
-    this.draw()
-    this.position.x += this.velocity.x
-    this.position.y += this.velocity.y
-    if ((this.position.x + this.velocity.x + this.width > canvas.width)) {
-      this.position.x = canvas.width - this.width
-    }
-    if ((this.position.x + this.velocity.x < 0)) {
-      this.position.x = 0
-    }
-    if (this.position.y + this.height + this.velocity.y >= canvas.height) {
-      this.position.y = canvas.height - this.height
-      this.velocity.y = 0
-      this.jumpReady = true
-    }
-    else {
-      this.velocity.y += gravity
-      this.jumpReady = false
-    }
-  }
-
-  jump() { 
-    this.velocity.y = -28
-    this.jumpReady = false
-  }
-}
-
-const player = new Sprite({
-  position: {
-    x: 0,
-    y: 0
-    },
-    velocity: {
-      x: 0,
-      y: 0
-    }
+const groundPlatform = new Platform({ 
+  position: {x: 0, y: canvas.height - platformHeight},
+  width: canvas.width
+})
+const platform2 = new Platform({
+  position: {x: 0, y: canvas.height - 100 - platformHeight},
+  width: canvas.width / 2
+})
+const playerOne = new Player({
+  position: { x: 200,  y: 500 },
+  velocity: { x: 0, y: 0 }
 })
 
-const enemy = new Sprite({
-  position: {
-  x: 300,
-  y: 300
-  },
-  velocity: {
-    x: 0,
-    y: 0
-  }
+const playerTwo = new Player({
+  position: { x: 300, y: 300 },
+  velocity: { x: 0, y: 0 }
 })
-
-player.draw()
-enemy.draw()
 
 const keys = {
   a: { pressed: false },
@@ -89,12 +39,17 @@ const keys = {
   ArrowUp: { pressed: false }
 }
 
+const platforms = [groundPlatform, platform2]
+
 function animate() {
   window.requestAnimationFrame(animate)
   c.fillStyle = 'black'
   c.fillRect(0, 0, canvas.width, canvas.height)
-  player.update()
-  enemy.update()
+  for (const platform of platforms) {
+    platform.update()
+  }
+  playerOne.update(platforms)
+  playerTwo.update(platforms)
   movePlayer()
   moveEnemy()
 }
@@ -107,59 +62,58 @@ window.addEventListener('keydown', (event) => {
   switch (event.key) {
     case 'a':
       keys.a.pressed = true
-      player.lastKey = 'a'
+      playerOne.lastKey = 'a'
       break
     case 'd':
       keys.d.pressed = true
-      player.lastKey = 'd'
+      playerOne.lastKey = 'd'
       break
     case 'w':
-      if (!keys.w.pressed && player.jumpReady) { 
-        player.jump()
+      if (!keys.w.pressed) { 
+        playerOne.jump()
       }
       keys.w.pressed = true
       break
     case 's':
       if (!keys.s.pressed) {
-        player.height /= 2
-        player.position.y += player.height
+        playerOne.crouch()
       }
       keys.s.pressed = true
       break
 
     case 'ArrowLeft':
       keys.ArrowLeft.pressed = true
-      enemy.lastKey = 'ArrowLeft'
+      playerTwo.lastKey = 'ArrowLeft'
       break
     case 'ArrowRight':
       keys.ArrowRight.pressed = true
-      enemy.lastKey = 'ArrowRight'
+      playerTwo.lastKey = 'ArrowRight'
       break
     case 'ArrowUp':
-      if (!keys.ArrowUp.pressed && enemy.jumpReady) {
-        enemy.velocity.y = -28
+      if (!keys.ArrowUp.pressed) {
+        playerTwo.jump()
       }
       keys.ArrowUp.pressed = true
       break
     case 'ArrowDown':
       if (!keys.ArrowDown.pressed) {
-        enemy.height /= 2
-        enemy.position.y += enemy.height
+        playerTwo.crouch()
       }
       keys.ArrowDown.pressed = true
+      break
+    case 'y':
+      console.log(playerOne)
       break
   }
 })
 
 window.addEventListener('keyup', (event) => {
-  console.log(event.key)
   switch (event.key) {
     case 'a':
       keys.a.pressed = false
       break
     case 's':
-      player.position.y -= player.height
-      player.height *= 2
+      playerOne.uncrouch()
       keys.s.pressed = false
       break
     case 'd':
@@ -173,8 +127,7 @@ window.addEventListener('keyup', (event) => {
       keys.ArrowLeft.pressed = false
       break
     case 'ArrowDown':
-      enemy.position.y -= enemy.height
-      enemy.height *= 2
+      playerTwo.uncrouch()
       keys.ArrowDown.pressed = false
       break
     case 'ArrowRight':
@@ -188,40 +141,40 @@ window.addEventListener('keyup', (event) => {
 
 function movePlayer() {
   if (keys.a.pressed && keys.d.pressed) {
-    if (player.lastKey == 'a') {
-      player.velocity.x = player.movementSpeed * -1
+    if (playerOne.lastKey == 'a') {
+      playerOne.velocity.x = playerOne.movementSpeed * -1
     }
-    else if (player.lastKey == 'd') {
-      player.velocity.x = player.movementSpeed
+    else if (playerOne.lastKey == 'd') {
+      playerOne.velocity.x = playerOne.movementSpeed
     }
   }
   else if (keys.a.pressed) {
-    player.velocity.x = player.movementSpeed * -1
+    playerOne.velocity.x = playerOne.movementSpeed * -1
   }
   else if (keys.d.pressed) {
-    player.velocity.x = player.movementSpeed
+    playerOne.velocity.x = playerOne.movementSpeed
   }
   else {
-    player.velocity.x = 0
+    playerOne.velocity.x = 0
   }
 }
 
 function moveEnemy() {
   if (keys.ArrowLeft.pressed && keys.ArrowRight.pressed) {
-    if (enemy.lastKey == 'ArrowLeft') {
-      enemy.velocity.x = enemy.movementSpeed * -1
+    if (playerTwo.lastKey == 'ArrowLeft') {
+      playerTwo.velocity.x = playerTwo.movementSpeed * -1
     }
-    else if (enemy.lastKey == 'ArrowRight') {
-      enemy.velocity.x = enemy.movementSpeed
+    else if (playerTwo.lastKey == 'ArrowRight') {
+      playerTwo.velocity.x = playerTwo.movementSpeed
     }
   }
   else if (keys.ArrowLeft.pressed) {
-    enemy.velocity.x = enemy.movementSpeed * -1
+    playerTwo.velocity.x = playerTwo.movementSpeed * -1
   }
   else if (keys.ArrowRight.pressed) {
-    enemy.velocity.x = enemy.movementSpeed
+    playerTwo.velocity.x = playerTwo.movementSpeed
   }
   else {
-    enemy.velocity.x = 0
+    playerTwo.velocity.x = 0
   }
 }
