@@ -13,7 +13,7 @@ const groundPlatform = new Platform({
   width: canvas.width
 })
 const platform2 = new Platform({
-  position: {x: 0, y: canvas.height - 100 - platformHeight},
+  position: {x: 0, y: canvas.height - 250 - platformHeight},
   width: canvas.width / 2
 })
 const playerOne = new Player({

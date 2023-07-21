@@ -16,15 +16,14 @@ class Player {
 
   update(platforms) {
     this.draw()
+    this.detectPlatformCollisions(platforms)
     this.position.x += this.velocity.x
-    this.position.y += this.velocity.y
     if ((this.position.x + this.velocity.x + this.width > canvas.width)) {
       this.position.x = canvas.width - this.width
     }
     if ((this.position.x + this.velocity.x < 0)) {
       this.position.x = 0
     }
-    this.detectPlatformCollisions(platforms)
     this.position.y += this.velocity.y
     this.velocity.y += gravity
   }
@@ -59,7 +58,7 @@ class Player {
   isAbovePlatform(platform) {
     return (platform.position.x <= this.position.x + this.width + this.velocity.x 
       && platform.position.x + platform.width >= this.position.x + this.velocity.x
-      && this.position.y + this.height - 10 < platform.position.y)
+      && this.position.y + this.height <= platform.position.y)
   }
 
   wouldPassThroughPlatform(platform) {
