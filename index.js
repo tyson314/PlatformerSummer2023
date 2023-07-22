@@ -1,21 +1,16 @@
 const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
 
-const gravity = 3
+const gravity = 4.5
 
-canvas.width = 600
-canvas.height = 770
+const smallPlatformWidth = 200
+const largePlatformWidth = 500
+
+canvas.width = 1000
+canvas.height = 750
 
 c.fillRect(0, 0, canvas.width, canvas.height)
 
-const groundPlatform = new Platform({ 
-  position: {x: 0, y: canvas.height - platformHeight},
-  width: canvas.width
-})
-const platform2 = new Platform({
-  position: {x: 0, y: canvas.height - 250 - platformHeight},
-  width: canvas.width / 2
-})
 const playerOne = new Player({
   position: { x: 200,  y: 500 },
   velocity: { x: 0, y: 0 }
@@ -39,7 +34,41 @@ const keys = {
   ArrowUp: { pressed: false }
 }
 
-const platforms = [groundPlatform, platform2]
+const platforms = 
+[ new Platform({ 
+  position: {x: 0, y: canvas.height - platformHeight},
+  width: canvas.width
+}), new Platform({
+  position: {x: 130, y: canvas.height - 150 - platformHeight},
+  width: smallPlatformWidth
+}), new Platform({ 
+  position: {x: canvas.width - smallPlatformWidth - 130, y: canvas.height - 150 - platformHeight},
+  width: smallPlatformWidth
+}), new Platform({ 
+  position: {x: canvas.width / 2 - 250, y: canvas.height - platformHeight - 300},
+  width: largePlatformWidth
+}), new Platform({ 
+  position: {x: 0, y: canvas.height - platformHeight - 420},
+  width: smallPlatformWidth
+}),
+new Platform({ 
+  position: {x: canvas.width - smallPlatformWidth, y: canvas.height - platformHeight - 420},
+  width: smallPlatformWidth
+})]
+
+const orbs = [ new Orb({
+  position: {
+    x: smallPlatformWidth / 2 + 130, 
+    y: canvas.height - 160 - playerOne.height / 2 }
+}), new Orb({
+  position: {
+    x: canvas.width - smallPlatformWidth / 2 - 130, 
+    y: canvas.height - 160 - playerOne.height / 2 }
+}), new Orb({
+  position: {
+    x: canvas.width / 2, 
+    y: canvas.height - 310 - playerOne.height / 2 }
+})]
 
 function animate() {
   window.requestAnimationFrame(animate)
@@ -48,8 +77,11 @@ function animate() {
   for (const platform of platforms) {
     platform.update()
   }
-  playerOne.update(platforms)
-  playerTwo.update(platforms)
+  for (const orb of orbs) {
+    orb.update()
+  }
+  playerOne.update(platforms, orbs)
+  playerTwo.update(platforms, orbs)
   movePlayer()
   moveEnemy()
 }

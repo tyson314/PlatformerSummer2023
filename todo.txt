@@ -1,0 +1,15 @@
+DRAW ARENA:
+ - Traps
+ - Boostpads/Treadmills
+ - Teleporters
+
+INTERACTIVE ELEMENTS:
+ - The Idol
+ - Weapons
+ - Power Ups
+
+For later:
+ - 2 Arenas
+ - Menu
+ - Multiplayer
+ - Rest of Webpage
