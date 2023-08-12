@@ -11,15 +11,17 @@ canvas.height = 750
 
 c.fillRect(0, 0, canvas.width, canvas.height)
 
-const playerOne = new Player({
+const players = {
+playerOne: new Player({
   position: { x: 200,  y: 500 },
-  velocity: { x: 0, y: 0 }
-})
-
-const playerTwo = new Player({
+  velocity: { x: 0, y: 0 },
+  directionFacing: 'right'
+}), 
+playerTwo: new Player({
   position: { x: 300, y: 300 },
-  velocity: { x: 0, y: 0 }
-})
+  velocity: { x: 0, y: 0 },
+  directionFacing: 'left'
+})}
 
 const keys = {
   a: { pressed: false },
@@ -59,15 +61,15 @@ new Platform({
 const orbs = [ new Orb({
   position: {
     x: smallPlatformWidth / 2 + 130, 
-    y: canvas.height - 160 - playerOne.height / 2 }
+    y: canvas.height - 160 - players.playerOne.height / 2 }
 }), new Orb({
   position: {
     x: canvas.width - smallPlatformWidth / 2 - 130, 
-    y: canvas.height - 160 - playerOne.height / 2 }
+    y: canvas.height - 160 - players.playerOne.height / 2 }
 }), new Orb({
   position: {
     x: canvas.width / 2, 
-    y: canvas.height - 310 - playerOne.height / 2 }
+    y: canvas.height - 310 - players.playerOne.height / 2 }
 })]
 
 function animate() {
@@ -80,8 +82,8 @@ function animate() {
   for (const orb of orbs) {
     orb.update()
   }
-  playerOne.update(platforms, orbs)
-  playerTwo.update(platforms, orbs)
+  players.playerOne.update(platforms, orbs)
+  players.playerTwo.update(platforms, orbs)
   movePlayer()
   moveEnemy()
 }
@@ -91,50 +93,53 @@ animate()
 
 
 window.addEventListener('keydown', (event) => {
+  console.log(event.key)
   switch (event.key) {
     case 'a':
       keys.a.pressed = true
-      playerOne.lastKey = 'a'
+      players.playerOne.lastKey = 'a'
       break
     case 'd':
       keys.d.pressed = true
-      playerOne.lastKey = 'd'
+      players.playerOne.lastKey = 'd'
       break
     case 'w':
       if (!keys.w.pressed) { 
-        playerOne.jump()
+        players.playerOne.jump()
       }
       keys.w.pressed = true
       break
     case 's':
       if (!keys.s.pressed) {
-        playerOne.crouch()
+        players.playerOne.crouch()
       }
       keys.s.pressed = true
+      break
+    case ' ':
       break
 
     case 'ArrowLeft':
       keys.ArrowLeft.pressed = true
-      playerTwo.lastKey = 'ArrowLeft'
+      players.playerTwo.lastKey = 'ArrowLeft'
       break
     case 'ArrowRight':
       keys.ArrowRight.pressed = true
-      playerTwo.lastKey = 'ArrowRight'
+      players.playerTwo.lastKey = 'ArrowRight'
       break
     case 'ArrowUp':
       if (!keys.ArrowUp.pressed) {
-        playerTwo.jump()
+        players.playerTwo.jump()
       }
       keys.ArrowUp.pressed = true
       break
     case 'ArrowDown':
       if (!keys.ArrowDown.pressed) {
-        playerTwo.crouch()
+        players.playerTwo.crouch()
       }
       keys.ArrowDown.pressed = true
       break
-    case 'y':
-      console.log(playerOne)
+    case '/':
+      playerTwo
       break
   }
 })
@@ -145,7 +150,7 @@ window.addEventListener('keyup', (event) => {
       keys.a.pressed = false
       break
     case 's':
-      playerOne.uncrouch()
+      players.playerOne.uncrouch()
       keys.s.pressed = false
       break
     case 'd':
@@ -159,7 +164,7 @@ window.addEventListener('keyup', (event) => {
       keys.ArrowLeft.pressed = false
       break
     case 'ArrowDown':
-      playerTwo.uncrouch()
+      players.playerTwo.uncrouch()
       keys.ArrowDown.pressed = false
       break
     case 'ArrowRight':
@@ -173,40 +178,40 @@ window.addEventListener('keyup', (event) => {
 
 function movePlayer() {
   if (keys.a.pressed && keys.d.pressed) {
-    if (playerOne.lastKey == 'a') {
-      playerOne.velocity.x = playerOne.movementSpeed * -1
+    if (players.playerOne.lastKey == 'a') {
+      players.playerOne.moveLeft()
     }
-    else if (playerOne.lastKey == 'd') {
-      playerOne.velocity.x = playerOne.movementSpeed
+    else if (players.playerOne.lastKey == 'd') {
+      players.playerOne.moveRight()
     }
   }
   else if (keys.a.pressed) {
-    playerOne.velocity.x = playerOne.movementSpeed * -1
+    players.playerOne.moveLeft()
   }
   else if (keys.d.pressed) {
-    playerOne.velocity.x = playerOne.movementSpeed
+    players.playerOne.moveRight()
   }
   else {
-    playerOne.velocity.x = 0
+    players.playerOne.stop()
   }
 }
 
 function moveEnemy() {
   if (keys.ArrowLeft.pressed && keys.ArrowRight.pressed) {
-    if (playerTwo.lastKey == 'ArrowLeft') {
-      playerTwo.velocity.x = playerTwo.movementSpeed * -1
+    if (players.playerTwo.lastKey == 'ArrowLeft') {
+      players.playerTwo.moveLeft()
     }
-    else if (playerTwo.lastKey == 'ArrowRight') {
-      playerTwo.velocity.x = playerTwo.movementSpeed
+    else if (players.playerTwo.lastKey == 'ArrowRight') {
+      players.playerTwo.moveRight()
     }
   }
   else if (keys.ArrowLeft.pressed) {
-    playerTwo.velocity.x = playerTwo.movementSpeed * -1
+    players.playerTwo.moveLeft()
   }
   else if (keys.ArrowRight.pressed) {
-    playerTwo.velocity.x = playerTwo.movementSpeed
+    players.playerTwo.moveRight()
   }
   else {
-    playerTwo.velocity.x = 0
+    players.playerTwo.stop()
   }
 }

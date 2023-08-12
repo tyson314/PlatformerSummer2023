@@ -3,9 +3,10 @@ const playerWidth = 50
 const baseSpeed = 18
 
 class Player {
-  constructor({position, velocity}) {
+  constructor({position, velocity, directionFacing}) {
     this.position = position
     this.velocity = velocity
+    this.directionFacing = directionFacing
 
     this.height = playerHeight
     this.width = playerWidth
@@ -21,6 +22,17 @@ class Player {
   draw() {
     c.fillStyle = 'red'
     c.fillRect(this.position.x, this.position.y, this.width, this.height)
+
+    c.fillStyle = 'lightgrey'
+    let headOffsetX = 5
+    let headoffsetY = 18
+    let headSize = 30
+    if (this.directionFacing === 'left') {
+      c.fillRect(this.position.x + headOffsetX, this.position.y + headoffsetY, headSize, headSize)
+    }
+    if (this.directionFacing === 'right') {
+      c.fillRect(this.position.x + this.width - headOffsetX - headSize, this.position.y + headoffsetY, headSize, headSize)
+    }
   }
 
   update(platforms, orbs) {
@@ -49,6 +61,17 @@ class Player {
   }
 
   //Player Controls
+  moveLeft() {
+    this.velocity.x = this.movementSpeed * -1
+    this.directionFacing = 'left'
+  }
+  moveRight() {
+    this.velocity.x = this.movementSpeed
+    this.directionFacing = 'right'
+  }
+  stop() {
+    this.velocity.x = 0
+  }
   jump() { 
     if (this.onPlatform) {
       this.velocity.y = -40
@@ -65,7 +88,20 @@ class Player {
     this.position.y -= this.height
     this.height *= 2
   }
+  //Attacking
+  attack(players) {
+    for (player of players) {
+      if (this.detectAttackSuccess()) {
+        player.takeDamage()
+      }
+    }
+  }
+  detectAttackSuccess() {
 
+  }
+  takeDamage() {
+
+  }
   //Platform Collision Logic
   detectPlatformCollisions(platforms) {
     
@@ -91,11 +127,10 @@ class Player {
     this.onPlatform = true
   }
 
+  //PowerUp Collision Logic
   detectOrbCollisions(orbs) {
     for (const orb of orbs) {
-      console.log(orb)
       if (this.detectOrbCollision(orb)) {
-        console.log(this)
         this.consumeOrb(orb)
         if (orb.type === 'speedBoost') {
           this.applySpeedBoost()
@@ -121,6 +156,7 @@ class Player {
     orb.consume()
     this.powerUpTimer = 75
   }
+  //PowerUp Effects
   applySpeedBoost() {
     this.currentPowerUp = 'speedBoost'
     this.movementSpeed *= 1.5
@@ -131,4 +167,6 @@ class Player {
   applyPowerJump() {
     this.currentPowerUp = 'powerJump'
   }
+
+
 }
