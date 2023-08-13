@@ -2,6 +2,11 @@ const playerHeight = 110
 const playerWidth = 50
 const baseSpeed = 18
 
+const hitboxHeight = 50
+const hitboxWidth = 80
+const hitboxOffsetX = 15
+const hitboxOffsetY = 15
+
 class Player {
   constructor({position, velocity, directionFacing}) {
     this.position = position
@@ -14,6 +19,12 @@ class Player {
 
     this.lastKey = null
     this.onPlatform = false
+
+    this.stunTimer = 0
+    this.isStunned = false
+
+    this.attackTimer = 0
+    this.canAttack
 
     this.powerUpTimer = 0
     this.currentPowerUp = null
@@ -37,9 +48,14 @@ class Player {
 
   update(platforms, orbs) {
     this.draw()
+    
     this.detectPlatformCollisions(platforms)
     this.detectOrbCollisions(orbs)
+
     this.position.x += this.velocity.x
+    if (this.onPlatform && this.isStunned) {
+      this.stop()
+    }
     if ((this.position.x + this.velocity.x + this.width > canvas.width)) {
       this.position.x = canvas.width - this.width
     }
@@ -49,31 +65,47 @@ class Player {
     this.position.y += this.velocity.y
     this.velocity.y += gravity
 
-    if (this.powerUpTimer > 0) {
-      this.powerUpTimer--
-    }
-    if (this.powerUpTimer === 0) {
+    this.decrementTimers()
+    if (this.powerUpTimer < 0) {
+      this.powerUpTimer = 0
       if (this.currentPowerUp === 'speedBoost') {
         this.movementSpeed = baseSpeed
       }
       this.currentPowerUp = null
     }
+    if (this.stunTimer < 0) {
+      this.stunTimer = 0
+      this.isStunned = false
+    }
+    if (this.attackTimer < 0) {
+      this.attackTimer = 0
+      this.canAttack = true
+    }
   }
 
+  decrementTimers() {
+    this.stunTimer--
+    this.powerUpTimer--
+    this.attackTimer--
+  }
   //Player Controls
   moveLeft() {
-    this.velocity.x = this.movementSpeed * -1
-    this.directionFacing = 'left'
+    if (!this.isStunned) {
+      this.velocity.x = this.movementSpeed * -1
+      this.directionFacing = 'left'
+    }
   }
   moveRight() {
-    this.velocity.x = this.movementSpeed
-    this.directionFacing = 'right'
+    if (!this.isStunned) {
+      this.velocity.x = this.movementSpeed
+      this.directionFacing = 'right'
+    }
   }
   stop() {
     this.velocity.x = 0
   }
   jump() { 
-    if (this.onPlatform) {
+    if (this.onPlatform && !this.isStunned) {
       this.velocity.y = -40
       if (this.currentPowerUp === 'powerJump') {
         this.velocity.y = -60
@@ -81,27 +113,71 @@ class Player {
     }
   }
   crouch() {
+    if (!this.isStunned) {
     this.height /= 2
     this.position.y += this.height
+    }
   }
   uncrouch() {
     this.position.y -= this.height
     this.height *= 2
   }
+
   //Attacking
   attack(players) {
-    for (player of players) {
-      if (this.detectAttackSuccess()) {
-        player.takeDamage()
+    if (!this.isStunned && this.canAttack) {
+      for (player of players) {
+        if (this !== player && this.detectAttackSuccess(player)) {
+          player.takeDamage(attackDirection)
+        }
       }
     }
+    this.attackTimer = 15
   }
-  detectAttackSuccess() {
+  detectAttackSuccess(player) {
+    return ( 
+      this.detectAttackSuccessUpperBound(player)
+      && this.detectAttackSuccessLowerBound(player)
+      && this.detectAttackSuccessLeftBound(player)
+      && this.detectAttackSuccessRightBound(player)
+    )
+  }
+  detectAttackSuccessUpperBound(player) {
+    if (this.directionFacing === 'right') 
+    return (this.position.y + hitboxOffsetY < player.position.y + player.height)
+  }
+  detectAttackSuccessLowerBound(player) {
+    return (this.position.y + hitboxOffsetY + hitboxHeight > player.position.y)
+  }
+  detectAttackSuccessLeftBound(player) {
+    if (this.directionFacing === 'right') {
+      return (this.position.x + hitboxOffsetX < player.position.x + player.width)
+    }
+    else {
+      return (this.position.x + hitboxOffsetX + hitboxWidth > player.position.x)
+    }
+  }
+  detectAttackSuccessRightBound(player) {
+    if (this.directionFacing === 'right') {
+      return (this.position.x + hitboxOffsetX + hitboxWidth > player.position.x)
+    }
+    else {
+      return (this.position.x + hitboxOffsetX < player.position.x + player.width)
+    }
+  }
 
+  takeDamage(attackDirection) {
+    this.stunTimer = 30
+    this.isStunned = true
+    if (attackDirection === 'left') {
+      this.velocity.x = this.movementSpeed * -1
+      this.velocity.y -= 10
+    }
+    else if (attackDirection === 'right') {
+      this.velocity.x = this.movementSpeed
+    }
   }
-  takeDamage() {
 
-  }
   //Platform Collision Logic
   detectPlatformCollisions(platforms) {
     
@@ -167,6 +243,4 @@ class Player {
   applyPowerJump() {
     this.currentPowerUp = 'powerJump'
   }
-
-
 }

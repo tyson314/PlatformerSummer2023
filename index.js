@@ -116,6 +116,7 @@ window.addEventListener('keydown', (event) => {
       keys.s.pressed = true
       break
     case ' ':
+      players.playerOne.attack(players)
       break
 
     case 'ArrowLeft':
@@ -139,7 +140,7 @@ window.addEventListener('keydown', (event) => {
       keys.ArrowDown.pressed = true
       break
     case '/':
-      playerTwo
+      players.playerTwo.attack(players)
       break
   }
 })
