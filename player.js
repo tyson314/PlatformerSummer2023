@@ -126,9 +126,10 @@ class Player {
   //Attacking
   attack(players) {
     if (!this.isStunned && this.canAttack) {
-      for (player of players) {
+      for (const playerID in players) {
+        const player = players[playerID]
         if (this !== player && this.detectAttackSuccess(player)) {
-          player.takeDamage(attackDirection)
+          player.takeDamage(this.directionFacing)
         }
       }
     }
@@ -143,7 +144,6 @@ class Player {
     )
   }
   detectAttackSuccessUpperBound(player) {
-    if (this.directionFacing === 'right') 
     return (this.position.y + hitboxOffsetY < player.position.y + player.height)
   }
   detectAttackSuccessLowerBound(player) {
@@ -154,7 +154,7 @@ class Player {
       return (this.position.x + hitboxOffsetX < player.position.x + player.width)
     }
     else {
-      return (this.position.x + hitboxOffsetX + hitboxWidth > player.position.x)
+      return (this.position.x + this.width - hitboxOffsetX - hitboxWidth < player.position.x + player.width)
     }
   }
   detectAttackSuccessRightBound(player) {
@@ -162,7 +162,7 @@ class Player {
       return (this.position.x + hitboxOffsetX + hitboxWidth > player.position.x)
     }
     else {
-      return (this.position.x + hitboxOffsetX < player.position.x + player.width)
+      return (this.position.x + this.width - hitboxOffsetX > player.position.x)
     }
   }
 
@@ -171,10 +171,11 @@ class Player {
     this.isStunned = true
     if (attackDirection === 'left') {
       this.velocity.x = this.movementSpeed * -1
-      this.velocity.y -= 10
+      this.velocity.y -= 20
     }
     else if (attackDirection === 'right') {
       this.velocity.x = this.movementSpeed
+      this.velocity.y -= 20
     }
   }
 
