@@ -1,6 +1,7 @@
 const playerHeight = 110
 const playerWidth = 50
-const baseSpeed = 18
+const baseSpeed = 8
+const jumpVelocity = -30
 
 const hitboxHeight = 50
 const hitboxWidth = 80
@@ -8,10 +9,11 @@ const hitboxOffsetX = 15
 const hitboxOffsetY = 15
 
 class Player {
-  constructor({position, velocity, directionFacing}) {
+  constructor({position, velocity, directionFacing, color}) {
     this.position = position
     this.velocity = velocity
     this.directionFacing = directionFacing
+    this.color = color
 
     this.height = playerHeight
     this.width = playerWidth
@@ -23,6 +25,9 @@ class Player {
     this.stunTimer = 0
     this.isStunned = false
 
+    this.invulerabilityTimer = 0
+    this.isInvulnerable = false
+    
     this.attackTimer = 0
     this.canAttack
 
@@ -31,7 +36,13 @@ class Player {
   }
 
   draw() {
-    c.fillStyle = 'red'
+    if (this.isStunned) {
+      c.fillStyle = 'grey'
+    }
+    else {
+      c.fillStyle = this.color
+    }
+    
     c.fillRect(this.position.x, this.position.y, this.width, this.height)
 
     c.fillStyle = 'lightgrey'
@@ -81,12 +92,17 @@ class Player {
       this.attackTimer = 0
       this.canAttack = true
     }
+    if (this.invulerabilityTimer < 0) {
+      this.invulerabilityTimer = 0
+      this.isInvulnerable = false
+    }
   }
 
   decrementTimers() {
     this.stunTimer--
     this.powerUpTimer--
     this.attackTimer--
+    this.invulerabilityTimer--
   }
   //Player Controls
   moveLeft() {
@@ -106,9 +122,9 @@ class Player {
   }
   jump() { 
     if (this.onPlatform && !this.isStunned) {
-      this.velocity.y = -40
+      this.velocity.y = jumpVelocity
       if (this.currentPowerUp === 'powerJump') {
-        this.velocity.y = -60
+        this.velocity.y = jumpVelocity * 1.5
       }
     }
   }
@@ -128,12 +144,14 @@ class Player {
     if (!this.isStunned && this.canAttack) {
       for (const playerID in players) {
         const player = players[playerID]
-        if (this !== player && this.detectAttackSuccess(player)) {
+        if (this !== player && this.detectAttackSuccess(player) && !player.isInvulnerable) {
           player.takeDamage(this.directionFacing)
         }
       }
+      this.canAttack = false
+      this.attackTimer = 15
     }
-    this.attackTimer = 15
+    
   }
   detectAttackSuccess(player) {
     return ( 
@@ -177,6 +195,8 @@ class Player {
       this.velocity.x = this.movementSpeed
       this.velocity.y -= 20
     }
+    this.invulerabilityTimer = 45
+    this.isInvulnerable = true
   }
 
   //Platform Collision Logic
@@ -208,7 +228,7 @@ class Player {
   detectOrbCollisions(orbs) {
     for (const orb of orbs) {
       if (this.detectOrbCollision(orb)) {
-        this.consumeOrb(orb)
+        
         if (orb.type === 'speedBoost') {
           this.applySpeedBoost()
         }
@@ -218,6 +238,7 @@ class Player {
         if (orb.type === 'powerJump') {
           this.applyPowerJump()
         }
+      this.consumeOrb(orb)
       }
     }
   }
@@ -240,6 +261,8 @@ class Player {
   }
   applyInvincibility() {
     this.currentPowerUp = 'invincibility'
+    this.invulerabilityTimer = 75
+    this.isInvulnerable = true
   }
   applyPowerJump() {
     this.currentPowerUp = 'powerJump'

@@ -1,7 +1,7 @@
 const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
 
-const gravity = 4.5
+const gravity = 2.6
 
 const smallPlatformWidth = 200
 const largePlatformWidth = 500
@@ -15,12 +15,14 @@ const players = {
 playerOne: new Player({
   position: { x: 200,  y: 500 },
   velocity: { x: 0, y: 0 },
-  directionFacing: 'right'
+  directionFacing: 'right',
+  color: 'red'
 }), 
 playerTwo: new Player({
   position: { x: 300, y: 300 },
   velocity: { x: 0, y: 0 },
-  directionFacing: 'left'
+  directionFacing: 'left',
+  color: 'teal'
 })}
 
 const keys = {
@@ -72,6 +74,13 @@ const orbs = [ new Orb({
     y: canvas.height - 310 - players.playerOne.height / 2 }
 })]
 
+const idol = new Idol({
+  position: {
+    x: 100,
+    y: 100
+  }
+})
+
 function animate() {
   window.requestAnimationFrame(animate)
   c.fillStyle = 'black'
@@ -82,6 +91,7 @@ function animate() {
   for (const orb of orbs) {
     orb.update()
   }
+  idol.update()
   players.playerOne.update(platforms, orbs)
   players.playerTwo.update(platforms, orbs)
   movePlayer()

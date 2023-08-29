@@ -1,15 +1,11 @@
-DRAW ARENA:
- - Traps
- - Boostpads/Treadmills
- - Teleporters
+PHASE 1
+- The Idol
+  - Score Points
+  - Throw it
+  - Get it knocked out of you
 
-INTERACTIVE ELEMENTS:
- - The Idol
- - Weapons
- - Power Ups
+PHASE 2
+- 
 
-For later:
- - 2 Arenas
- - Menu
- - Multiplayer
- - Rest of Webpage
+PHASE 3
+-

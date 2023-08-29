@@ -39,7 +39,7 @@ class Orb {
   consume() {
     this.spawned = false
     this.respawnCount = Math.floor(Math.random() * 150 + 75)
-    this.selectType()
+    this.type = this.selectType()
   }
 
   selectType() {
