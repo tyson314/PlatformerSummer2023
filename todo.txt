@@ -1,11 +1,16 @@
-PHASE 1
-- The Idol
-  - Score Points
-  - Throw it
-  - Get it knocked out of you
+PHASE 1 
+- Keep score
+- Win screen
+- Replayability
+- More players?
+- Some sound?
 
 PHASE 2
-- 
+- Website
+- How to play page
+- Embed some ads?
+- Acknowledgements
 
 PHASE 3
--
+- Convert to server
+- Online capability?

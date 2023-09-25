@@ -1,6 +1,6 @@
 const playerHeight = 110
 const playerWidth = 50
-const baseSpeed = 8
+const baseSpeed = 12
 const jumpVelocity = -30
 
 const hitboxHeight = 50
@@ -33,6 +33,10 @@ class Player {
 
     this.powerUpTimer = 0
     this.currentPowerUp = null
+
+    this.hasTrophy = false
+    this.trophyTime = 0
+    this.possessedTrophy = null
   }
 
   draw() {
@@ -44,8 +48,14 @@ class Player {
     }
     
     c.fillRect(this.position.x, this.position.y, this.width, this.height)
+    
+    if (this.hasTrophy) {
+      c.fillStyle = 'gold'
+    }
+    else { 
+      c.fillStyle = 'lightgrey'
+    }
 
-    c.fillStyle = 'lightgrey'
     let headOffsetX = 5
     let headoffsetY = 18
     let headSize = 30
@@ -57,12 +67,13 @@ class Player {
     }
   }
 
-  update(platforms, orbs) {
+  update(platforms, orbs, trophy) {
     this.draw()
     
     this.detectPlatformCollisions(platforms)
     this.detectOrbCollisions(orbs)
-
+    this.detectTrophyCollision(trophy)
+    
     this.position.x += this.velocity.x
     if (this.onPlatform && this.isStunned) {
       this.stop()
@@ -76,7 +87,21 @@ class Player {
     this.position.y += this.velocity.y
     this.velocity.y += gravity
 
-    this.decrementTimers()
+    if (this.hasTrophy) {
+      this.trophyTime++
+    }
+    this.updateTimers()
+    this.resolveConditions()
+  }
+
+  updateTimers() {
+    this.stunTimer--
+    this.powerUpTimer--
+    this.attackTimer--
+    this.invulerabilityTimer--
+    
+  }
+  resolveConditions() {
     if (this.powerUpTimer < 0) {
       this.powerUpTimer = 0
       if (this.currentPowerUp === 'speedBoost') {
@@ -98,12 +123,6 @@ class Player {
     }
   }
 
-  decrementTimers() {
-    this.stunTimer--
-    this.powerUpTimer--
-    this.attackTimer--
-    this.invulerabilityTimer--
-  }
   //Player Controls
   moveLeft() {
     if (!this.isStunned) {
@@ -195,6 +214,13 @@ class Player {
       this.velocity.x = this.movementSpeed
       this.velocity.y -= 20
     }
+    this.hasTrophy = false
+    this.possessedTrophy.drop({
+      x: this.position.x + this.width / 2 - trophyDimensions / 2,
+      y: this.position.y - this.height * 1.5
+    })
+    this.possessedTrophy = null
+    this.hasTrophy = false
     this.invulerabilityTimer = 45
     this.isInvulnerable = true
   }
@@ -266,5 +292,20 @@ class Player {
   }
   applyPowerJump() {
     this.currentPowerUp = 'powerJump'
+  }
+
+  //Trophy Collision Logic
+  detectTrophyCollision(trophy) {
+    //console.log('nigga')
+    if (this.position.x < trophy.position.x + trophyDimensions
+      && this.position.x + this.width > trophy.position.x
+      && this.position.y < trophy.position.y + trophyDimensions
+      && this.position.y + this.height > trophy.position.y
+      && !trophy.pickedUp && trophy.isPickupable) {
+        console.log(trophy)
+        trophy.pickup()
+        this.hasTrophy = true
+        this.possessedTrophy = trophy
+      }
   }
 }

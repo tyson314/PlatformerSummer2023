@@ -6,10 +6,25 @@ const gravity = 2.6
 const smallPlatformWidth = 200
 const largePlatformWidth = 500
 
+const winningScore = 200
+
 canvas.width = 1000
 canvas.height = 750
 
 c.fillRect(0, 0, canvas.width, canvas.height)
+
+const keys = {
+  a: { pressed: false },
+  w: { pressed: false },
+  s: { pressed: false },
+  d: { pressed: false },
+  space: { pressed: false },
+
+  ArrowLeft: { pressed: false },
+  ArrowRight: { pressed: false },
+  ArrowDown: { pressed: false },
+  ArrowUp: { pressed: false }
+}
 
 const players = {
 playerOne: new Player({
@@ -24,19 +39,6 @@ playerTwo: new Player({
   directionFacing: 'left',
   color: 'teal'
 })}
-
-const keys = {
-  a: { pressed: false },
-  w: { pressed: false },
-  s: { pressed: false },
-  d: { pressed: false },
-  space: { pressed: false },
-
-  ArrowLeft: { pressed: false },
-  ArrowRight: { pressed: false },
-  ArrowDown: { pressed: false },
-  ArrowUp: { pressed: false }
-}
 
 const platforms = 
 [ new Platform({ 
@@ -74,14 +76,30 @@ const orbs = [ new Orb({
     y: canvas.height - 310 - players.playerOne.height / 2 }
 })]
 
-const idol = new Idol({
-  position: {
-    x: 100,
-    y: 100
-  }
-})
+const trophy = new Trophy({
+    x: canvas.width / 2 - trophyDimensions / 2,
+    y: 50
+  })
 
+function endGame(color) {
+  c.fillStyle = 'black'
+  c.fillRect(0, 0, canvas.width, canvas.height)
+  c.fillStyle = color
+  
+}
 function animate() {
+  if (players.playerOne.trophyTime > 200 || players.playerTwo.trophyTime > 200) {
+    window.cancelAnimationFrame
+    let color = null
+    if (players.playerOne.trophyTime > 200) {
+      color = 'red'
+    }
+    if (players.playerTwo.trophyTime > 200) {
+      color = 'teal'
+    }
+    endGame(color)
+    return
+  }
   window.requestAnimationFrame(animate)
   c.fillStyle = 'black'
   c.fillRect(0, 0, canvas.width, canvas.height)
@@ -91,15 +109,17 @@ function animate() {
   for (const orb of orbs) {
     orb.update()
   }
-  idol.update()
-  players.playerOne.update(platforms, orbs)
-  players.playerTwo.update(platforms, orbs)
+  trophy.update()
+  players.playerOne.update(platforms, orbs, trophy)
+  players.playerTwo.update(platforms, orbs, trophy)
   movePlayer()
   moveEnemy()
 }
 
 animate()
-
+console.log('asl;djfasl;j')
+c.fillStyle = 'black'
+c.fillRect(0, 0, canvas.width, canvas.height)
 
 
 window.addEventListener('keydown', (event) => {
